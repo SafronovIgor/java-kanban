@@ -18,4 +18,7 @@ public class Subtask extends Task {
         this.idEpics.add(id);
     }
 
+    public ArrayList<Integer> getIdEpics() {
+        return idEpics;
+    }
 }

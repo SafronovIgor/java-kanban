@@ -1,6 +1,7 @@
 package task.tracker;
 
 import task.tracker.models.Epic;
+import task.tracker.models.Status;
 import task.tracker.models.Subtask;
 import task.tracker.models.Task;
 
@@ -97,6 +98,30 @@ public class TaskManager {
 
     public void updateEpic(Epic epic) {
         final int NEW_ID = epic.getId();
+        ArrayList<Integer> listIdSubtasks = epic.getListIdSubtasks();
+        boolean allSubtasksNew = true;
+        boolean allSubtasksDone = true;
+
+        for (int idSubtask : listIdSubtasks) {
+            Subtask subtask = subtaskHashMap.get(idSubtask);
+            Status status = subtask.getStatus();
+
+            if (status != Status.NEW) {
+                allSubtasksNew = false;
+            }
+            if (status != Status.DONE) {
+                allSubtasksDone = false;
+            }
+        }
+
+        if (listIdSubtasks.isEmpty() || allSubtasksNew) {
+            epic.setStatus(Status.NEW);
+        } else if (allSubtasksDone) {
+            epic.setStatus(Status.DONE);
+        } else {
+            epic.setStatus(Status.IN_PROGRESS);
+        }
+
         epicHashMap.put(NEW_ID, epic);
     }
 
@@ -120,5 +145,4 @@ public class TaskManager {
         return result;
     }
 
-    //todo: Управление статусами
 }
