@@ -1,18 +1,10 @@
 package task.tracker.models;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Epic extends Task {
-    private ArrayList<Integer> idSubtask = new ArrayList<>();
-    @Override
-    public String toString() {
-        return "Epic{" +
-                "name='" + getName() + '\'' +
-                ", description='" + getDescription() + '\'' +
-                ", id=" + getId() +
-                ", status=" + getStatus() +
-                '}';
-    }
+    private final ArrayList<Integer> idSubtask = new ArrayList<>();
 
     public void addIdSubtaskToList(Integer id) {
         this.idSubtask.add(id);
@@ -20,5 +12,16 @@ public class Epic extends Task {
 
     public ArrayList<Integer> getListIdSubtasks() {
         return idSubtask;
+    }
+
+    @Override
+    public String toString() {
+        return "Epic{" +
+                "name='" + getName() + '\'' +
+                ", description='" + getDescription() + '\'' +
+                ", id=" + getId() +
+                ", status=" + getStatus() +
+                ", idSubtask{" + idSubtask +
+                '}';
     }
 }

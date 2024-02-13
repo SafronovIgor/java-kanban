@@ -1,4 +1,4 @@
-package task.tracker;
+package task.tracker.service;
 
 import task.tracker.models.Epic;
 import task.tracker.models.Status;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TaskManager {
-    private static int taskCount = -1;
+    private static int taskCount = -1; // просто чтоб первая таска имела 0 для красоты -> ++taskCount
     private final HashMap<Integer, Task> taskHashMap = new HashMap<>();
     private final HashMap<Integer, Subtask> subtaskHashMap = new HashMap<>();
     private final HashMap<Integer, Epic> epicHashMap = new HashMap<>();
@@ -22,11 +22,11 @@ public class TaskManager {
         return new ArrayList<>(taskHashMap.values());
     }
 
-    public ArrayList<Task> getAllSubtasks() {
+    public ArrayList<Subtask> getAllSubtasks() {
         return new ArrayList<>(subtaskHashMap.values());
     }
 
-    public ArrayList<Task> getAllEpics() {
+    public ArrayList<Epic> getAllEpics() {
         return new ArrayList<>(epicHashMap.values());
     }
 
@@ -58,9 +58,10 @@ public class TaskManager {
         final int NEW_ID = TaskManager.getNewId();
 
         if (!taskHashMap.containsKey(NEW_ID)) {
+            newTask.setId(NEW_ID);
             taskHashMap.put(NEW_ID, newTask);
         } else {
-            System.out.println("Задача с таким id уже есть в спике.");
+            System.out.println("Задача с таким id уже есть в списке.");
         }
     }
 
@@ -70,9 +71,10 @@ public class TaskManager {
         if (!subtaskHashMap.containsKey(NEW_ID)) {
             epicHashMap.get(idEpic).addIdSubtaskToList(NEW_ID);
             subtask.addIdEpicToList(idEpic);
+            subtask.setId(NEW_ID);
             subtaskHashMap.put(NEW_ID, subtask);
         } else {
-            System.out.println("Подзадача с таким id уже есть в спике.");
+            System.out.println("Подзадача с таким id уже есть в списке.");
         }
     }
 
@@ -80,9 +82,10 @@ public class TaskManager {
         final int NEW_ID = TaskManager.getNewId();
 
         if (!epicHashMap.containsKey(NEW_ID)) {
+            epic.setId(NEW_ID);
             epicHashMap.put(NEW_ID, epic);
         } else {
-            System.out.println("Эпик с таким id уже есть в спике.");
+            System.out.println("Эпик с таким id уже есть в списке."); //Копи паст :3 сорри
         }
     }
 
@@ -93,8 +96,16 @@ public class TaskManager {
 
     public void updateSubtask(Subtask subtask) {
         final int NEW_ID = subtask.getId();
+        ArrayList<Integer> idEpics = subtask.getIdEpics();
+
+        for (int idEpic : idEpics) {
+            Epic epic = epicHashMap.get(idEpic);
+            updateEpic(epic);
+        }
+
         subtaskHashMap.put(NEW_ID, subtask);
     }
+
 
     public void updateEpic(Epic epic) {
         final int NEW_ID = epic.getId();
@@ -114,7 +125,7 @@ public class TaskManager {
             }
         }
 
-        if (listIdSubtasks.isEmpty() || allSubtasksNew) {
+        if (allSubtasksNew) {
             epic.setStatus(Status.NEW);
         } else if (allSubtasksDone) {
             epic.setStatus(Status.DONE);
@@ -145,4 +156,15 @@ public class TaskManager {
         return result;
     }
 
+    public HashMap<Integer, Task> getTaskHashMap() {
+        return taskHashMap;
+    }
+
+    public HashMap<Integer, Subtask> getSubtaskHashMap() {
+        return subtaskHashMap;
+    }
+
+    public HashMap<Integer, Epic> getEpicHashMap() {
+        return epicHashMap;
+    }
 }
