@@ -14,6 +14,11 @@ public class TaskManager {
     private final HashMap<Integer, Subtask> subtaskHashMap = new HashMap<>();
     private final HashMap<Integer, Epic> epicHashMap = new HashMap<>();
 
+    public void changeStatus(Subtask subtask, Status status) {
+        subtask.setStatus(status);
+        updateSubtask(subtask);
+    }
+
     private static int getNewId() {
         return ++taskCount;
     }
@@ -105,7 +110,6 @@ public class TaskManager {
 
         subtaskHashMap.put(NEW_ID, subtask);
     }
-
 
     public void updateEpic(Epic epic) {
         final int NEW_ID = epic.getId();

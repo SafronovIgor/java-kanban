@@ -63,6 +63,9 @@ public class Main {
             //break; Меняем один статус.
         }
 
+        subtask1.setStatus(Status.DONE);
+        taskManager.updateSubtask(subtask1);
+
         System.out.println(epic1);
         System.out.println(listSubtasksByEpic); //После изм. статуса
 
