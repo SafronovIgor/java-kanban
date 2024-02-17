@@ -1,9 +1,9 @@
-package task.tracker.service;
+package task.service;
 
-import task.tracker.models.Epic;
-import task.tracker.models.Status;
-import task.tracker.models.Subtask;
-import task.tracker.models.Task;
+import task.models.Epic;
+import task.models.Status;
+import task.models.Subtask;
+import task.models.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,11 +1,10 @@
-import task.tracker.models.Epic;
-import task.tracker.models.Status;
-import task.tracker.models.Subtask;
-import task.tracker.models.Task;
-import task.tracker.service.TaskManager;
+import task.models.Epic;
+import task.models.Status;
+import task.models.Subtask;
+import task.models.Task;
+import task.service.TaskManager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class Main {
 
