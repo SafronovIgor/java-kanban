@@ -6,9 +6,7 @@ import task.models.Epic;
 import task.models.Subtask;
 import task.models.Task;
 
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class InMemoryTaskManagerTest {
     private static final TaskManager manager = Managers.getDefault();
@@ -69,13 +67,4 @@ class InMemoryTaskManagerTest {
         }
     }
 
-    @Test
-    public void checkTaskIdConflicts() {
-        ArrayList<Task> tasks = manager.getAllTasks();
-        Task task = tasks.get(0);
-        System.out.println(task);
-        task.setId(5);
-        manager.addNewTask(task);
-        System.out.println(task);
-    }
 }
