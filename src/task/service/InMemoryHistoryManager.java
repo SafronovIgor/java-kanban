@@ -7,19 +7,25 @@ import task.models.Task;
 import java.util.ArrayList;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private final TaskManager manager = Managers.getDefault();
+    private final TaskManager manager = Managers.getDefaultTaskManager();
 
     @Override
     public void add(Task task) {
-        manager.addNewTask(task);
+        if (task != null) { // не привычно проверять на нал когда работаешь один и сам вызываешь)
+            manager.addNewTask(task);
+        }
     }
 
     public void add(Subtask subtask, Integer idEpic) {
-        manager.addNewSubtask(subtask, idEpic);
+        if (subtask != null && idEpic != null) {
+            manager.addNewSubtask(subtask, idEpic);
+        }
     }
 
     public void add(Epic epic) {
-        manager.addNewEpic(epic);
+        if (epic != null) {
+            manager.addNewEpic(epic);
+        }
     }
 
 

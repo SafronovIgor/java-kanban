@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EpicTest {
-    private static final TaskManager manager = Managers.getDefault();
+    private static final TaskManager manager = Managers.getDefaultTaskManager();
 
     @BeforeAll
     public static void beforeAll() {

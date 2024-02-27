@@ -10,18 +10,19 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class InMemoryTaskManager implements TaskManager {
+    private static final int SIZE_HISTORIC = 10; // мерси буду знать)
     private static int taskCount = -1;
     private final HashMap<Integer, Task> taskHashMap = new HashMap<>();
     private final HashMap<Integer, Subtask> subtaskHashMap = new HashMap<>();
     private final HashMap<Integer, Epic> epicHashMap = new HashMap<>();
-    private ArrayList<Task> tasksHistoric = new ArrayList<>();
+    private final ArrayList<Task> tasksHistoric = new ArrayList<>(); // я отдавал в 22-ой строке  tasksHistoric, переделаю поумнее, торопился чтоб успеть сдать
 
     @Override
     public ArrayList<Task> getHistory() {
-        if (tasksHistoric.size() > 10) {
-            tasksHistoric = new ArrayList<>(tasksHistoric.subList(tasksHistoric.size() - 10, tasksHistoric.size()));
+        if (tasksHistoric.size() > SIZE_HISTORIC) {
+            return new ArrayList<>(tasksHistoric.subList(tasksHistoric.size() - 10, tasksHistoric.size()));
         }
-        return tasksHistoric;
+        return new ArrayList<>();
     }
 
     @Override

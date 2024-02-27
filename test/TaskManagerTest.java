@@ -10,7 +10,7 @@ public class TaskManagerTest {
 
 //    убедитесь, что утилитарный класс всегда возвращает проинициализированные и готовые к работе экземпляры менеджеров;
 //    тут бы тесты не запускались если бы менеджер был не рабочий)
-    private static final TaskManager manager = Managers.getDefault();
+    private static final TaskManager manager = Managers.getDefaultTaskManager();
 
     @BeforeAll
     public static void BeforeAll() {

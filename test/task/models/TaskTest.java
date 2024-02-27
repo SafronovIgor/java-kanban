@@ -1,6 +1,5 @@
 package task.models;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import task.service.Managers;
 import task.service.TaskManager;
@@ -10,7 +9,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TaskTest {
-    private static final TaskManager manager = Managers.getDefault();
+    private static final TaskManager manager = Managers.getDefaultTaskManager();
 
     @Test
     public void TaskEqualsTask() {
