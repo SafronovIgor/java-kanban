@@ -1,10 +1,15 @@
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import task.models.Epic;
+import task.models.Status;
 import task.models.Subtask;
 import task.models.Task;
 import task.service.Managers;
 import task.service.TaskManager;
+
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TaskManagerTest {
 
@@ -73,4 +78,33 @@ public class TaskManagerTest {
         }
 
     }
+
+    @Test
+    public void testSubtaskDeletion() {
+        Epic epic = manager.getAllEpics().get(0);
+        Subtask subtask = manager.getListSubtaskByEpic(epic).get(0);
+
+        assertNull(manager.getSubtaskById(subtask.getId()));
+        manager.deleteSubtaskByID(subtask.getId());
+
+        assertFalse(manager.getAllSubtasks().contains(subtask.getId()));
+    }
+
+    @Test
+    public void testEpicSubtaskIds() {
+        Epic epic = manager.getAllEpics().get(0);
+        ArrayList<Subtask> listSubtasks = manager.getListSubtaskByEpic(epic);
+        assertTrue(listSubtasks.size() != 0);
+    }
+
+    @Test
+    public void testSubtaskStatusChange() {
+        Subtask subtask = manager.getAllSubtasks().get(0);
+        subtask.setStatus(Status.IN_PROGRESS);
+
+        manager.changeStatus(subtask, Status.DONE);
+
+        assertEquals(Status.DONE, subtask.getStatus());
+    }
+
 }
