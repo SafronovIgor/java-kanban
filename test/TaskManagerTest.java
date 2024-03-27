@@ -84,8 +84,8 @@ public class TaskManagerTest {
         Epic epic = manager.getAllEpics().get(0);
         Subtask subtask = manager.getListSubtaskByEpic(epic).get(0);
 
-        assertNull(manager.getSubtaskById(subtask.getId()));
         manager.deleteSubtaskByID(subtask.getId());
+        assertNull(manager.getSubtaskById(subtask.getId()));
 
         assertFalse(manager.getAllSubtasks().contains(subtask.getId()));
     }

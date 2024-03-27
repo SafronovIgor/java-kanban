@@ -3,20 +3,20 @@ package task.service;
 import task.models.Task;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 
 public class InMemoryHistoryManager implements HistoryManager {
     private static final int SIZE_HISTORIC = 10;
     private Node head;
     private Node tail;
     private int size;
-    private final LinkedHashMap<Integer, Node> taskMap;
+    private final HashMap<Integer, Node> taskMap;
 
     public InMemoryHistoryManager() {
         this.head = null;
         this.tail = null;
         this.size = 0;
-        this.taskMap = new LinkedHashMap<>();
+        this.taskMap = new HashMap<>();
     }
 
     private static class Node {
@@ -37,7 +37,6 @@ public class InMemoryHistoryManager implements HistoryManager {
             return;
         }
 
-
         if (taskMap.containsKey(task.getId())) {
             Node existingNode = taskMap.get(task.getId());
             removeNode(existingNode);
@@ -54,20 +53,12 @@ public class InMemoryHistoryManager implements HistoryManager {
         size++;
 
         taskMap.put(task.getId(), newNode);
-    }
 
-    public void linkLast(Task task) {
-        add(task);
-    }
-
-    public ArrayList<Task> getTasks() {
-        ArrayList<Task> taskList = new ArrayList<>();
-        Node current = head;
-        while (current != null) {
-            taskList.add(current.task);
-            current = current.next;
+        if (size > SIZE_HISTORIC) {
+            head = head.next;
+            head.prev = null;
+            size--;
         }
-        return taskList;
     }
 
     @Override
@@ -93,6 +84,20 @@ public class InMemoryHistoryManager implements HistoryManager {
             count++;
         }
         return tasksHistoric;
+    }
+
+    public void linkLast(Task task) {
+        add(task);
+    }
+
+    public ArrayList<Task> getTasks() {
+        ArrayList<Task> taskList = new ArrayList<>();
+        Node current = head;
+        while (current != null) {
+            taskList.add(current.task);
+            current = current.next;
+        }
+        return taskList;
     }
 
     private void removeNode(Node node) {
