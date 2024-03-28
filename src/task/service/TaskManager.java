@@ -7,10 +7,11 @@ import task.models.Task;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public interface TaskManager {
 
-    ArrayList<Task> getHistory();
+    List<Task> getHistory();
 
     void changeStatus(Subtask subtask, Status status);
 
