@@ -7,6 +7,7 @@ public class Task {
     private String name;
     private String description;
     private Status status = Status.NEW;
+    private TaskType taskType = TaskType.TASK;
 
     public String getDescription() {
         return description;
@@ -14,6 +15,10 @@ public class Task {
 
     public Status getStatus() {
         return status;
+    }
+
+    public TaskType getTaskType() {
+        return taskType;
     }
 
     public void setName(String name) {
@@ -38,6 +43,17 @@ public class Task {
 
     public String getName() {
         return name;
+    }
+
+    public String toString(String delimiter) {
+        final String[] properties = {
+                String.valueOf(getId()),
+                String.valueOf(getTaskType()),
+                getName(),
+                String.valueOf(getStatus()),
+                getDescription(),
+                ""};
+        return String.join(delimiter, properties);
     }
 
     @Override
