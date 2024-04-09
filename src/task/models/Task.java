@@ -9,6 +9,10 @@ public class Task {
     private Status status = Status.NEW;
     private TaskType taskType = TaskType.TASK;
 
+    public void setTaskType(TaskType taskType) {
+        this.taskType = taskType;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -43,6 +47,17 @@ public class Task {
 
     public String getName() {
         return name;
+    }
+
+    public Task fromString(String value, String delimiter) {
+        final String[] taskData = value.split(delimiter);
+
+        setId(Integer.parseInt(taskData[0]));
+        setTaskType(TaskType.valueOf(taskData[1]));
+        setName(taskData[2]);
+        setStatus(Status.valueOf(taskData[3]));
+        setDescription(taskData[4]);
+        return this;
     }
 
     public String toString(String delimiter) {

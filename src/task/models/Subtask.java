@@ -1,6 +1,7 @@
 package task.models;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Subtask extends Task {
     private final ArrayList<Integer> idEpics = new ArrayList<>();
@@ -28,6 +29,22 @@ public class Subtask extends Task {
     @Override
     public TaskType getTaskType() {
         return taskType;
+    }
+
+    @Override
+    public Subtask fromString(String value, String delimiter) {
+        super.fromString(value, delimiter);
+
+        int startIndex = value.indexOf('[');
+        int endIndex = value.indexOf(']');
+        String innerValue = value.substring(startIndex + 1, endIndex);
+        String[] parts = innerValue.split(delimiter);
+
+        for (int i = 0; i < parts.length; i++) {
+            idEpics.add(Integer.parseInt(parts[i].trim()));
+        }
+
+        return this;
     }
 
     @Override

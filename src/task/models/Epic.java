@@ -14,20 +14,14 @@ public class Epic extends Task {
         return idSubtask;
     }
 
-    public String toString(String delimiter) {
-        final String[] properties = {
-                String.valueOf(getId()),
-                String.valueOf(getTaskType()),
-                getName(),
-                String.valueOf(getStatus()),
-                getDescription(),
-                ""};
-        return String.join(delimiter, properties);
-    }
-
     @Override
     public TaskType getTaskType() {
         return taskType;
+    }
+
+    @Override
+    public Epic fromString(String value, String delimiter) {
+        return (Epic) super.fromString(value, delimiter);
     }
 
     @Override

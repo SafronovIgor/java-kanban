@@ -1,20 +1,15 @@
 package task.service;
 
 import task.Exceptions.ManagerSaveException;
-import task.models.Epic;
-import task.models.Status;
-import task.models.Subtask;
-import task.models.Task;
+import task.models.*;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
     private final String pathToFile;
@@ -23,11 +18,45 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         this.pathToFile = pathToFile;
     }
 
+    public static ArrayList<Task> loadFromFile(File file) {
+        ArrayList<Task> list = new ArrayList<>();
+        try {
+            String stringData = Files.readString(file.toPath());
+            String[] lines = stringData.split("\n");
+            String[] linesWithoutHeader = Arrays.copyOfRange(lines, 1, lines.length);
+            String delimiter = ",";
+
+            for (String line : linesWithoutHeader) {
+                String[] dataTask = line.split(delimiter);
+                switch (TaskType.valueOf(dataTask[1])) {
+                    case TASK: {
+                        Task task = new Task().fromString(line, delimiter);
+                        list.add(task);
+                        break;
+                    }
+                    case EPIC: {
+                        Epic task = new Epic().fromString(line, delimiter);
+                        list.add(task);
+                        break;
+                    }
+                    case SUBTASK:{
+                        Subtask subtask = new Subtask().fromString(line, delimiter);
+                        list.add(subtask);
+                        break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return list;
+    }
+
     public void save() {
-        final Path filePath = Path.of(this.pathToFile);
-        final String[] columns = {"id", "type", "name", "status", "description", "epic"};
-        final String delimiter = ",";
-        final LinkedList<Task> list = new LinkedList<>();
+        Path filePath = Path.of(this.pathToFile);
+        String[] columns = {"id", "type", "name", "status", "description", "epic"};
+        String delimiter = ",";
+        LinkedList<Task> list = new LinkedList<>();
 
         list.addAll(super.getAllTasks());
         list.addAll(super.getAllEpics());
