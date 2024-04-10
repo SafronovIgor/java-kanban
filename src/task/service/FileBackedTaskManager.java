@@ -11,8 +11,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
+public class FileBackedTaskManager extends InMemoryTaskManager {
     private final String pathToFile;
+
+    public FileBackedTaskManager() {
+        try {
+            this.pathToFile = Files.createTempFile("back_", ".txt").toString();
+        } catch (IOException e) {
+            throw new ManagerSaveException(e.getMessage());
+        }
+    }
 
     public FileBackedTaskManager(String pathToFile) {
         this.pathToFile = pathToFile;
@@ -47,7 +55,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ManagerSaveException(e.getMessage());
         }
         return list;
     }
@@ -75,6 +83,10 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         } catch (IOException e) {
             throw new ManagerSaveException(e.getMessage());
         }
+    }
+
+    public String getPathToFile() {
+        return pathToFile;
     }
 
     @Override
