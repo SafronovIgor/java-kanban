@@ -8,6 +8,7 @@ import task.models.Task;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public interface TaskManager {
 
@@ -60,4 +61,6 @@ public interface TaskManager {
     HashMap<Integer, Epic> getEpicHashMap();
 
     void recalculateDuration(Subtask subtask, int id);
+
+    Set<Task> getPrioritizedTasks();
 }

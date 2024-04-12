@@ -10,7 +10,7 @@ public class Task {
     private String description;
     private Status status = Status.NEW;
     private TaskType taskType = TaskType.TASK;
-    private LocalDateTime startTime = LocalDateTime.now();
+    private LocalDateTime startTime;
     private Duration duration = Duration.ZERO;
 
     public LocalDateTime getEndTime() {

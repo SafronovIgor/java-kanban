@@ -166,18 +166,21 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     public void addNewTask(Task newTask) {
         super.addNewTask(newTask);
         save();
+        super.addTaskInToPrioritizedTasks(newTask);
     }
 
     @Override
     public void addNewSubtask(Subtask subtask, Integer idEpic) {
         super.addNewSubtask(subtask, idEpic);
         save();
+        super.addTaskInToPrioritizedTasks(subtask);
     }
 
     @Override
     public void addNewEpic(Epic epic) {
         super.addNewEpic(epic);
         save();
+        super.addTaskInToPrioritizedTasks(epic);
     }
 
     @Override

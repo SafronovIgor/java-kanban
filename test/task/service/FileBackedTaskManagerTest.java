@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.TreeSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,20 +56,20 @@ class FileBackedTaskManagerTest {
         Epic epic1 = new Epic();
         epic1.setName("Купить дом.");
         epic1.setDescription("Начать выбирать новое жильё.");
-        task1.setStartTime(LocalDateTime.now());
+        epic1.setStartTime(LocalDateTime.now().minusDays(9));
         MANAGER.addNewEpic(epic1);
 
         Subtask subtask1 = new Subtask();
-        subtask1.setName("Найти подходящий дом.");
+        subtask1.setName("subtask1");
         subtask1.setDescription("Найти сайты по продажам домой.");
-        subtask1.setStartTime(LocalDateTime.now());
+        subtask1.setStartTime(LocalDateTime.now().minusDays(8));
         subtask1.setDuration(Duration.ofDays(durationDaysSubtask1));
         MANAGER.addNewSubtask(subtask1, epic1.getId());
 
         Subtask subtask2 = new Subtask();
         subtask2.setName("Найти работу.");
-        subtask2.setDescription("Найти сайты с работой.");
-        subtask2.setStartTime(LocalDateTime.now());
+        subtask2.setDescription("subtask2");
+        subtask2.setStartTime(LocalDateTime.now().minusDays(5));
         subtask2.setDuration(Duration.ofDays(durationDaysSubtask2));
         MANAGER.addNewSubtask(subtask2, epic1.getId());
 
@@ -82,6 +83,10 @@ class FileBackedTaskManagerTest {
 
         assertFalse(list.isEmpty());
         assertEquals(epic1.getEndTime(), epic1.getStartTime().plusDays(durationDaysEpic1));
+
+        System.out.println("----------------------------");
+        TreeSet<Task> prioritizedTasks = MANAGER.getPrioritizedTasks();
+        prioritizedTasks.forEach(task -> System.out.println(task.getName() + " " + task.getStartTime()));
     }
 
     @Test

@@ -7,10 +7,7 @@ import task.models.Task;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -19,6 +16,7 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Subtask> subtaskHashMap = new HashMap<>();
     private final HashMap<Integer, Epic> epicHashMap = new HashMap<>();
     private final HistoryManager historyManager = Managers.getDefaultHistoryManager();
+    private final TreeSet<Task> prioritizedTasks = new TreeSet<>(new TaskStartTimeComparator());
 
     @Override
     public List<Task> getHistory() {
@@ -240,11 +238,14 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = epicHashMap.get(id);
         ArrayList<Subtask> listSubtaskByEpic = getListSubtaskByEpic(epic);
 
-        epic.setStartTime(listSubtaskByEpic.stream()
+        LocalDateTime localDateTime = listSubtaskByEpic.stream()
                 .map(Subtask::getStartTime)
                 .min(LocalDateTime::compareTo)
-                .orElse(null)
-        );
+                .orElse(null);
+        if (localDateTime != null) {
+            localDateTime = localDateTime.withNano(0);
+        }
+        epic.setStartTime(localDateTime);
 
         epic.setEndTime(listSubtaskByEpic.stream()
                 .map(Subtask::getEndTime)
@@ -256,6 +257,15 @@ public class InMemoryTaskManager implements TaskManager {
                 .map(Subtask::getDuration)
                 .reduce(Duration.ZERO, Duration::plus)
         );
+    }
+
+    public void addTaskInToPrioritizedTasks(Task t) {
+        prioritizedTasks.add(t);
+    }
+
+    @Override
+    public TreeSet<Task> getPrioritizedTasks() {
+        return prioritizedTasks;
     }
 
 }
