@@ -99,6 +99,27 @@ public class InMemoryHistoryManager implements HistoryManager {
         }
     }
 
+    public static String historyToString(FileBackedTaskManager manager) {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<Task> history = manager.getHistory();
+        for (Task task : history) {
+            stringBuilder.append(task.getId()).append(",");
+        }
+        if (stringBuilder.length() > 0) {
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+        return stringBuilder.toString();
+    }
+
+    public static List<Integer> historyFromString(String value) {
+        String[] parts = value.split(",");
+        List<Integer> historyIds = new ArrayList<>();
+        for (String part : parts) {
+            historyIds.add(Integer.parseInt(part));
+        }
+        return historyIds;
+    }
+
     @Override
     public void add(Task task) {
         taskListManager.add(task);
