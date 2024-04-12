@@ -1,11 +1,10 @@
 package task.models;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Subtask extends Task {
     private final ArrayList<Integer> idEpics = new ArrayList<>();
-    private TaskType taskType = TaskType.SUBTASK;
+    private final TaskType taskType = TaskType.SUBTASK;
 
     public void addIdEpicToList(Integer id) {
         this.idEpics.add(id);
@@ -22,7 +21,10 @@ public class Subtask extends Task {
                 getName(),
                 String.valueOf(getStatus()),
                 getDescription(),
-                idEpics.toString()}; // в тз не массив, но я реализовал множество подзадач поэтому как то так o_O
+                String.valueOf(getStartTime()),
+                getDuration().toString(),
+                getEndTime().toString(),
+                idEpics.toString()};
         return String.join(delimiter, properties);
     }
 
@@ -54,6 +56,9 @@ public class Subtask extends Task {
                 ", description='" + getDescription() + '\'' +
                 ", id=" + getId() +
                 ", status=" + getStatus() +
+                ", startTime=" + getStartTime() +
+                ", duration=" + getDuration() +
+                ", endTime=" + getEndTime() +
                 ", idEpics{" + idEpics +
                 '}';
     }

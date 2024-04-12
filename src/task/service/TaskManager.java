@@ -58,4 +58,6 @@ public interface TaskManager {
     HashMap<Integer, Subtask> getSubtaskHashMap();
 
     HashMap<Integer, Epic> getEpicHashMap();
+
+    void recalculateDuration(Subtask subtask, int id);
 }

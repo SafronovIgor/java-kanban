@@ -5,6 +5,8 @@ import task.models.Status;
 import task.models.Subtask;
 import task.models.Task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -119,6 +121,7 @@ public class InMemoryTaskManager implements TaskManager {
             subtask.setId(NEW_ID);
             subtaskHashMap.put(NEW_ID, subtask);
             historyManager.add(subtask);
+            recalculateDuration(subtask, idEpic);
         } else {
             updateSubtask(subtask);
         }
@@ -230,6 +233,29 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public HashMap<Integer, Epic> getEpicHashMap() {
         return epicHashMap;
+    }
+
+    @Override
+    public void recalculateDuration(Subtask subtask, int id) {
+        Epic epic = epicHashMap.get(id);
+        ArrayList<Subtask> listSubtaskByEpic = getListSubtaskByEpic(epic);
+
+        epic.setStartTime(listSubtaskByEpic.stream()
+                .map(Subtask::getStartTime)
+                .min(LocalDateTime::compareTo)
+                .orElse(null)
+        );
+
+        epic.setEndTime(listSubtaskByEpic.stream()
+                .map(Subtask::getEndTime)
+                .max(LocalDateTime::compareTo)
+                .orElse(null)
+        );
+
+        epic.setDuration(listSubtaskByEpic.stream()
+                .map(Subtask::getDuration)
+                .reduce(Duration.ZERO, Duration::plus)
+        );
     }
 
 }

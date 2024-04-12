@@ -47,7 +47,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                         list.add(task);
                         break;
                     }
-                    case SUBTASK:{
+                    case SUBTASK: {
                         Subtask subtask = new Subtask().fromString(line, delimiter);
                         list.add(subtask);
                         break;
@@ -62,7 +62,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public void save() {
         Path filePath = Path.of(this.pathToFile);
-        String[] columns = {"id", "type", "name", "status", "description", "epic"};
+        String[] columns = {"id", "type", "name", "status", "description", "epic", "startTime", "duration", "endTime"};
         String delimiter = ",";
         LinkedList<Task> list = new LinkedList<>();
 
@@ -242,5 +242,11 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         HashMap<Integer, Epic> epicHashMap = super.getEpicHashMap();
         save();
         return epicHashMap;
+    }
+
+    @Override
+    public void recalculateDuration(Subtask subtask, int id) {
+        super.recalculateDuration(subtask, id);
+        save();
     }
 }

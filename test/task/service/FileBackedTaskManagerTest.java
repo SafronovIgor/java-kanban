@@ -10,19 +10,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
+import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class FileBackedTaskManagerTest {
+    private final Random random = new Random();
     private static final FileBackedTaskManager MANAGER = Managers.getFileBackedTaskManager();
 
     @Test
     @Order(1)
     public void checkLoadingFromEmptyFile() {
         File file = Paths.get(MANAGER.getPathToFile()).toFile();
+        System.out.println("File saving data:" + file);
         FileBackedTaskManager.loadFromFile(file);
 
         LinkedList<Task> list = new LinkedList<>();
@@ -37,20 +41,36 @@ class FileBackedTaskManagerTest {
     @Test
     @Order(2)
     public void savingTasks() {
+        final int durationDaysEpic1 = random.nextInt(500);
+        final int durationDaysSubtask1 = random.nextInt(durationDaysEpic1);
+        final int durationDaysSubtask2 = (durationDaysEpic1 - durationDaysSubtask1);
+
         Task task1 = new Task();
         task1.setName("Согласовать время по ТЗ");
         task1.setDescription("ТЗ №7585 - доработка ws.");
+        task1.setStartTime(LocalDateTime.now());
+        task1.setDuration(Duration.ofDays(5));
         MANAGER.addNewTask(task1);
 
         Epic epic1 = new Epic();
         epic1.setName("Купить дом.");
         epic1.setDescription("Начать выбирать новое жильё.");
+        task1.setStartTime(LocalDateTime.now());
         MANAGER.addNewEpic(epic1);
 
         Subtask subtask1 = new Subtask();
         subtask1.setName("Найти подходящий дом.");
         subtask1.setDescription("Найти сайты по продажам домой.");
+        subtask1.setStartTime(LocalDateTime.now());
+        subtask1.setDuration(Duration.ofDays(durationDaysSubtask1));
         MANAGER.addNewSubtask(subtask1, epic1.getId());
+
+        Subtask subtask2 = new Subtask();
+        subtask2.setName("Найти работу.");
+        subtask2.setDescription("Найти сайты с работой.");
+        subtask2.setStartTime(LocalDateTime.now());
+        subtask2.setDuration(Duration.ofDays(durationDaysSubtask2));
+        MANAGER.addNewSubtask(subtask2, epic1.getId());
 
         LinkedList<Task> list = new LinkedList<>();
 
@@ -58,7 +78,10 @@ class FileBackedTaskManagerTest {
         list.addAll(MANAGER.getAllEpics());
         list.addAll(MANAGER.getAllSubtasks());
 
+        list.forEach(System.out::println);
+
         assertFalse(list.isEmpty());
+        assertEquals(epic1.getEndTime(), epic1.getStartTime().plusDays(durationDaysEpic1));
     }
 
     @Test
@@ -84,6 +107,7 @@ class FileBackedTaskManagerTest {
     @AfterAll
     public static void afterAll() {
         try {
+            System.out.println("File saving data remove: " + MANAGER.getPathToFile());
             Files.delete(Path.of(MANAGER.getPathToFile()));
         } catch (IOException e) {
             throw new RuntimeException(e);
