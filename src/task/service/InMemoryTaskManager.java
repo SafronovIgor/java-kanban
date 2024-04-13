@@ -37,27 +37,24 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public ArrayList<Task> getAllTasks() {
         Collection<Task> values = taskHashMap.values();
-        for (Task t : values) {
-            historyManager.add(t);
-        }
+        values.forEach(historyManager::add);
+
         return new ArrayList<>(values);
     }
 
     @Override
     public ArrayList<Subtask> getAllSubtasks() {
         Collection<Subtask> values = subtaskHashMap.values();
-        for (Subtask t : values) {
-            historyManager.add(t);
-        }
+        values.forEach(historyManager::add);
+
         return new ArrayList<>(values);
     }
 
     @Override
     public ArrayList<Epic> getAllEpics() {
         Collection<Epic> values = epicHashMap.values();
-        for (Epic t : values) {
-            historyManager.add(t);
-        }
+        values.forEach(historyManager::add);
+
         return new ArrayList<>(values);
     }
 
@@ -154,11 +151,11 @@ public class InMemoryTaskManager implements TaskManager {
         final int NEW_ID = subtask.getId();
         ArrayList<Integer> idEpics = subtask.getIdEpics();
 
-        for (int idEpic : idEpics) {
+        idEpics.forEach(idEpic -> {
             taskValidation(subtask, idEpic);
             Epic epic = epicHashMap.get(idEpic);
             updateEpic(epic);
-        }
+        });
 
         subtaskHashMap.put(NEW_ID, subtask);
     }
