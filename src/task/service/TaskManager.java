@@ -30,9 +30,9 @@ public interface TaskManager {
 
     Task getTaskById(Integer id);
 
-    Subtask getSubtaskById(Integer id);
-
     Epic getEpicsById(Integer id);
+
+    Subtask getSubtaskById(Integer id);
 
     void addNewTask(Task newTask);
 
@@ -65,4 +65,6 @@ public interface TaskManager {
     Set<Task> getPrioritizedTasks();
 
     void taskValidation(Task task, Integer idEpic);
+
+    HistoryManager getHistoryManager();
 }

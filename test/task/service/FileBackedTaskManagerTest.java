@@ -13,14 +13,17 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class FileBackedTaskManagerTest {
-    private final Random random = new Random();
-    private static final FileBackedTaskManager MANAGER = Managers.getFileBackedTaskManager();
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
+    private static String pathToFile;
+
+    FileBackedTaskManagerTest() {
+        super(Managers.getFileBackedTaskManager());
+        FileBackedTaskManagerTest.pathToFile = MANAGER.getPathToFile();
+    }
 
     @Test
     @Order(1)
@@ -83,13 +86,16 @@ class FileBackedTaskManagerTest {
 
     @Test
     @Order(3)
-    public void loadingTasks() {
+    public void loadingTasks() throws IOException {
         TaskManager defaultTaskManager = Managers.getDefaultTaskManager();
         defaultTaskManager.deleteAllTask();
         defaultTaskManager.deleteAllEpics();
         defaultTaskManager.deleteAllSubtasks();
 
         File file = Paths.get(MANAGER.getPathToFile()).toFile();
+        if (file.length() == 0) {
+            savingTasks();
+        }
         FileBackedTaskManager.loadFromFile(file);
 
         LinkedList<Task> list = new LinkedList<>();
@@ -104,8 +110,8 @@ class FileBackedTaskManagerTest {
     @AfterAll
     public static void afterAll() {
         try {
-            System.out.println("File saving data remove: " + MANAGER.getPathToFile());
-            Files.delete(Path.of(MANAGER.getPathToFile()));
+            System.out.println("File saving data remove: " + pathToFile);
+            Files.delete(Path.of(pathToFile));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

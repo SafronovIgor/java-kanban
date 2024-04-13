@@ -11,13 +11,16 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class InMemoryTaskManager implements TaskManager {
-
     private static int taskCount = -1;
     private final HashMap<Integer, Task> taskHashMap = new HashMap<>();
     private final HashMap<Integer, Subtask> subtaskHashMap = new HashMap<>();
     private final HashMap<Integer, Epic> epicHashMap = new HashMap<>();
     private final HistoryManager historyManager = Managers.getDefaultHistoryManager();
     private final TreeSet<Task> prioritizedTasks = new TreeSet<>(new TaskStartTimeComparator());
+
+    private static int getNewId() {
+        return ++taskCount;
+    }
 
     @Override
     public List<Task> getHistory() {
@@ -28,10 +31,6 @@ public class InMemoryTaskManager implements TaskManager {
     public void changeStatus(Subtask subtask, Status status) {
         subtask.setStatus(status);
         updateSubtask(subtask);
-    }
-
-    private static int getNewId() {
-        return ++taskCount;
     }
 
     @Override
@@ -277,15 +276,18 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void taskValidation(Task task, Integer idEpic) {
-
         Stream.of(getAllTasks(), getAllEpics(), getAllSubtasks())
                 .flatMap(List::stream)
                 .forEach(t -> {
                     if (t.isIntersecting(task)) {
                         System.out.println("Пересечение дат задачи: " + t.getName() + " с " + task.getName());
                     }
-                });
-
+                });//тут можно сделать return ну или выбрасывать ошибку,
+                   //оставил так пока не понял как надо обрабатывать пересечение.
+    }
+    @Override
+    public HistoryManager getHistoryManager() {
+        return historyManager;
     }
 
 }
