@@ -124,7 +124,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         task.setStartTime(LocalDateTime.now());
         MANAGER.addNewEpic(task);
 
-        Subtask subtask= new Subtask();
+        Subtask subtask = new Subtask();
         subtask.setName("TEST_Task1");
         subtask.setDescription("Task for test");
         subtask.setStartTime(LocalDateTime.now());

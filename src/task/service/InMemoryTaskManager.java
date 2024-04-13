@@ -282,9 +282,9 @@ public class InMemoryTaskManager implements TaskManager {
                     if (t.isIntersecting(task)) {
                         System.out.println("Пересечение дат задачи: " + t.getName() + " с " + task.getName());
                     }
-                });//тут можно сделать return ну или выбрасывать ошибку,
-                   //оставил так пока не понял как надо обрабатывать пересечение.
+                });//тут можно сделать return ну или выбрасывать ошибку, оставил так пока не понял как надо обрабатывать пересечение.
     }
+
     @Override
     public HistoryManager getHistoryManager() {
         return historyManager;
