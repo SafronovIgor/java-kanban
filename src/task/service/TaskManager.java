@@ -63,4 +63,6 @@ public interface TaskManager {
     void recalculateDuration(Subtask subtask, int id);
 
     Set<Task> getPrioritizedTasks();
+
+    void taskValidation(Task task, Integer idEpic);
 }

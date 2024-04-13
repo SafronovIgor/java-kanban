@@ -127,4 +127,8 @@ public class Task {
         return Objects.hash(id);
     }
 
+    public boolean isIntersecting(Task other) {
+        return (this.getEndTime().isAfter(other.startTime) && other.getEndTime().isAfter(this.startTime)) ||
+                (other.getEndTime().isAfter(this.startTime) && this.getEndTime().isAfter(other.startTime));
+    }
 }

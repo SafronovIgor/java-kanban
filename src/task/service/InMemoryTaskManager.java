@@ -8,6 +8,7 @@ import task.models.Task;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -98,6 +99,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewTask(Task newTask) {
+        taskValidation(newTask, null);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!taskHashMap.containsKey(NEW_ID)) {
@@ -111,6 +113,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewSubtask(Subtask subtask, Integer idEpic) {
+        taskValidation(subtask, idEpic);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!subtaskHashMap.containsKey(NEW_ID)) {
@@ -127,6 +130,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewEpic(Epic epic) {
+        taskValidation(epic, null);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!epicHashMap.containsKey(NEW_ID)) {
@@ -140,6 +144,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
+        taskValidation(task, null);
         final int NEW_ID = task.getId();
         taskHashMap.put(NEW_ID, task);
     }
@@ -150,6 +155,7 @@ public class InMemoryTaskManager implements TaskManager {
         ArrayList<Integer> idEpics = subtask.getIdEpics();
 
         for (int idEpic : idEpics) {
+            taskValidation(subtask, idEpic);
             Epic epic = epicHashMap.get(idEpic);
             updateEpic(epic);
         }
@@ -159,6 +165,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpic(Epic epic) {
+        taskValidation(epic, null);
         final int NEW_ID = epic.getId();
         ArrayList<Integer> listIdSubtasks = epic.getListIdSubtasks();
         boolean allSubtasksNew = true;
@@ -242,6 +249,9 @@ public class InMemoryTaskManager implements TaskManager {
                 .map(Subtask::getStartTime)
                 .min(LocalDateTime::compareTo)
                 .orElse(null);
+
+        //При установке эпику даты начала, я обрезаю наносекунды, что того что бы
+        //в таблице с упорядоченными тасками не было сравнения одинаковых дат)
         if (localDateTime != null) {
             localDateTime = localDateTime.withNano(0);
         }
@@ -266,6 +276,19 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public TreeSet<Task> getPrioritizedTasks() {
         return prioritizedTasks;
+    }
+
+    @Override
+    public void taskValidation(Task task, Integer idEpic) {
+
+        Stream.of(getAllTasks(), getAllEpics(), getAllSubtasks())
+                .flatMap(List::stream)
+                .forEach(t -> {
+                    if (t.isIntersecting(task)) {
+                        System.out.println("Пересечение дат задачи: " + t.getName() + " с " + task.getName());
+                    }
+                });
+
     }
 
 }
