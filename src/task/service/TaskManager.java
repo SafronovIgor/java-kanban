@@ -64,7 +64,7 @@ public interface TaskManager {
 
     Set<Task> getPrioritizedTasks();
 
-    void taskValidation(Task task, Integer idEpic);
+    void taskValidation(Task task);
 
     HistoryManager getHistoryManager();
 }

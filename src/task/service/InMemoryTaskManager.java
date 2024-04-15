@@ -95,7 +95,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewTask(Task newTask) {
-        taskValidation(newTask, null);
+        taskValidation(newTask);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!taskHashMap.containsKey(NEW_ID)) {
@@ -109,7 +109,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewSubtask(Subtask subtask, Integer idEpic) {
-        taskValidation(subtask, idEpic);
+        taskValidation(subtask);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!subtaskHashMap.containsKey(NEW_ID)) {
@@ -126,7 +126,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewEpic(Epic epic) {
-        taskValidation(epic, null);
+        taskValidation(epic);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!epicHashMap.containsKey(NEW_ID)) {
@@ -140,7 +140,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
-        taskValidation(task, null);
+        taskValidation(task);
         final int NEW_ID = task.getId();
         taskHashMap.put(NEW_ID, task);
     }
@@ -151,7 +151,7 @@ public class InMemoryTaskManager implements TaskManager {
         ArrayList<Integer> idEpics = subtask.getIdEpics();
 
         idEpics.forEach(idEpic -> {
-            taskValidation(subtask, idEpic);
+            taskValidation(subtask);
             Epic epic = epicHashMap.get(idEpic);
             updateEpic(epic);
         });
@@ -161,7 +161,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateEpic(Epic epic) {
-        taskValidation(epic, null);
+        taskValidation(epic);
         final int NEW_ID = epic.getId();
         ArrayList<Integer> listIdSubtasks = epic.getListIdSubtasks();
         boolean allSubtasksNew = true;
@@ -271,18 +271,18 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public TreeSet<Task> getPrioritizedTasks() {
-        return prioritizedTasks;
+        return new TreeSet<>(prioritizedTasks);
     }
 
     @Override
-    public void taskValidation(Task task, Integer idEpic) {
+    public void taskValidation(Task task) {
         Stream.of(getAllTasks(), getAllEpics(), getAllSubtasks())
                 .flatMap(List::stream)
                 .forEach(t -> {
                     if (t.isIntersecting(task)) {
-                        System.out.println("Пересечение дат задачи: " + t.getName() + " с " + task.getName());
+                        throw new RuntimeException("Не удалось создать задачу (Пересакается период).");
                     }
-                });//тут можно сделать return ну или выбрасывать ошибку, оставил так пока не понял как надо обрабатывать пересечение.
+                });
     }
 
     @Override

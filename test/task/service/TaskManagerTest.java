@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -148,7 +149,13 @@ abstract class TaskManagerTest<T extends TaskManager> {
         task.setName("TEST_Epic2");
         task.setDescription("Task for test");
         task.setStartTime(LocalDateTime.now());
-        MANAGER.addNewEpic(task);
+        task.setDuration(Duration.ofDays(1));
+
+        Epic finalTask2 = task;
+        assertThrows(
+                RuntimeException.class,
+                () -> MANAGER.addNewEpic(finalTask2),
+                "Должна быть ошибка создания задачи с пересечением.");
 
         Stream.of(MANAGER.getAllTasks(), MANAGER.getAllEpics(), MANAGER.getAllSubtasks())
                 .flatMap(List::stream)
@@ -157,49 +164,17 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     void testRemovalFromBeginning() {
-        Task task1 = createTask(1);
-        Task task2 = createTask(2);
-        Task task3 = createTask(3);
-
-        HistoryManager historyManager = MANAGER.getHistoryManager();
-
-        historyManager.remove(task1.getId());
-
-        assertEquals(2, historyManager.getHistory().size());
-        assertFalse(historyManager.getHistory().contains(task1));
-        assertTrue(historyManager.getHistory().contains(task2));
-        assertTrue(historyManager.getHistory().contains(task3));
+        testRemoval(createTaskList(3), 0);
     }
 
     @Test
     void testRemovalFromMiddle() {
-        Task task1 = createTask(1);
-        Task task2 = createTask(2);
-        Task task3 = createTask(3);
-        HistoryManager historyManager = MANAGER.getHistoryManager();
-
-        historyManager.remove(task2.getId());
-
-        assertEquals(2, historyManager.getHistory().size());
-        assertTrue(historyManager.getHistory().contains(task1));
-        assertFalse(historyManager.getHistory().contains(task2));
-        assertTrue(historyManager.getHistory().contains(task3));
+        testRemoval(createTaskList(3), 1);
     }
 
     @Test
     void testRemovalFromEnd() {
-        Task task1 = createTask(1);
-        Task task2 = createTask(2);
-        Task task3 = createTask(3);
-
-        HistoryManager historyManager = MANAGER.getHistoryManager();
-
-        historyManager.remove(task3.getId());
-
-        assertEquals(2, historyManager.getHistory().size());
-        assertTrue(historyManager.getHistory().contains(task1));
-        assertTrue(historyManager.getHistory().contains(task2));
-        assertFalse(historyManager.getHistory().contains(task3));
+        testRemoval(createTaskList(3), 2);
     }
 
     @Test
@@ -212,6 +187,26 @@ abstract class TaskManagerTest<T extends TaskManager> {
         }, "Деление на два не должно вызывать исключение");
     }
 
+    private void testRemoval(List<Task> tasks, int index) {
+        Task taskToRemove = tasks.get(index);
+        HistoryManager historyManager = MANAGER.getHistoryManager();
+
+        historyManager.remove(taskToRemove.getId());
+
+        assertEquals(tasks.size() - 1, historyManager.getHistory().size());
+        assertFalse(historyManager.getHistory().contains(taskToRemove));
+        for (int i = 0; i < tasks.size(); i++) {
+            if (i != index) {
+                assertTrue(historyManager.getHistory().contains(tasks.get(i)));
+            }
+        }
+    }
+
+    private List<Task> createTaskList(int count) {
+        return IntStream.range(1, count + 1)
+                .mapToObj(this::createTask)
+                .collect(Collectors.toList());
+    }
 
     public int createTasks(int bound) {
         final int b = random.nextInt(bound);
@@ -242,7 +237,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     public int createSubtasks(int bound) {
-        final int b = random.nextInt(1_000);
+        final int b = random.nextInt(bound);
         final int boundSubtask = random.nextInt(10);
         AtomicInteger countSubtask = new AtomicInteger();
 
