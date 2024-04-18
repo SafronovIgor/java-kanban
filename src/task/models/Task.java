@@ -1,5 +1,7 @@
 package task.models;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
@@ -8,9 +10,31 @@ public class Task {
     private String description;
     private Status status = Status.NEW;
     private TaskType taskType = TaskType.TASK;
+    private LocalDateTime startTime;
+    private Duration duration = Duration.ZERO;
+
+    public LocalDateTime getEndTime() {
+        return startTime.plusSeconds(duration.toSeconds());
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
 
     public void setTaskType(TaskType taskType) {
         this.taskType = taskType;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
     public String getDescription() {
@@ -57,6 +81,8 @@ public class Task {
         setName(taskData[2]);
         setStatus(Status.valueOf(taskData[3]));
         setDescription(taskData[4]);
+        setStartTime(LocalDateTime.parse(taskData[5]));
+        setDuration(Duration.parse(taskData[6]));
         return this;
     }
 
@@ -67,7 +93,11 @@ public class Task {
                 getName(),
                 String.valueOf(getStatus()),
                 getDescription(),
+                String.valueOf(getStartTime()),
+                getDuration().toString(),
+                getEndTime().toString(),
                 ""};
+
         return String.join(delimiter, properties);
     }
 
@@ -78,6 +108,9 @@ public class Task {
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status=" + status +
+                ", startTime=" + startTime +
+                ", duration=" + duration +
+                ", endTime=" + getEndTime() +
                 '}';
     }
 
@@ -94,4 +127,8 @@ public class Task {
         return Objects.hash(id);
     }
 
+    public boolean isIntersecting(Task other) {
+        return (this.getEndTime().isAfter(other.startTime) && other.getEndTime().isAfter(this.startTime)) ||
+                (other.getEndTime().isAfter(this.startTime) && this.getEndTime().isAfter(other.startTime));
+    }
 }

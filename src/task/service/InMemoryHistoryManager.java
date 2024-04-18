@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
-    private static final int SIZE_HISTORIC = 10;
+    public static final int SIZE_HISTORIC = 10;
     private final HashMap<Integer, TaskNode> taskMap;
     private final TaskLinkedList taskListManager;
 
@@ -50,9 +50,8 @@ public class InMemoryHistoryManager implements HistoryManager {
             taskMap.put(task.getId(), newNode);
 
             if (size > SIZE_HISTORIC) {
-                head = head.next;
-                head.prev = null;
-                size--;
+                TaskNode firstTask = head;
+                removeNode(firstTask);
             }
         }
 

@@ -1,13 +1,19 @@
 package task.models;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
     private final ArrayList<Integer> idSubtask = new ArrayList<>();
-    private TaskType taskType = TaskType.EPIC;
+    private final TaskType taskType = TaskType.EPIC;
+    private LocalDateTime endTime;
 
     public void addIdSubtaskToList(Integer id) {
         this.idSubtask.add(id);
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public ArrayList<Integer> getListIdSubtasks() {
@@ -31,6 +37,9 @@ public class Epic extends Task {
                 ", description='" + getDescription() + '\'' +
                 ", id=" + getId() +
                 ", status=" + getStatus() +
+                ", startTime=" + getStartTime() +
+                ", duration=" + getDuration() +
+                ", endTime=" + getEndTime() +
                 ", idSubtask{" + idSubtask +
                 '}';
     }

@@ -8,6 +8,7 @@ import task.models.Task;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 public interface TaskManager {
 
@@ -29,9 +30,9 @@ public interface TaskManager {
 
     Task getTaskById(Integer id);
 
-    Subtask getSubtaskById(Integer id);
-
     Epic getEpicsById(Integer id);
+
+    Subtask getSubtaskById(Integer id);
 
     void addNewTask(Task newTask);
 
@@ -58,4 +59,12 @@ public interface TaskManager {
     HashMap<Integer, Subtask> getSubtaskHashMap();
 
     HashMap<Integer, Epic> getEpicHashMap();
+
+    void recalculateDuration(Subtask subtask, int id);
+
+    Set<Task> getPrioritizedTasks();
+
+    void taskValidation(Task task);
+
+    HistoryManager getHistoryManager();
 }

@@ -5,18 +5,22 @@ import task.models.Status;
 import task.models.Subtask;
 import task.models.Task;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class InMemoryTaskManager implements TaskManager {
-
     private static int taskCount = -1;
     private final HashMap<Integer, Task> taskHashMap = new HashMap<>();
     private final HashMap<Integer, Subtask> subtaskHashMap = new HashMap<>();
     private final HashMap<Integer, Epic> epicHashMap = new HashMap<>();
     private final HistoryManager historyManager = Managers.getDefaultHistoryManager();
+    private final TreeSet<Task> prioritizedTasks = new TreeSet<>(new TaskStartTimeComparator());
+
+    private static int getNewId() {
+        return ++taskCount;
+    }
 
     @Override
     public List<Task> getHistory() {
@@ -29,34 +33,27 @@ public class InMemoryTaskManager implements TaskManager {
         updateSubtask(subtask);
     }
 
-    private static int getNewId() {
-        return ++taskCount;
-    }
-
     @Override
     public ArrayList<Task> getAllTasks() {
         Collection<Task> values = taskHashMap.values();
-        for (Task t : values) {
-            historyManager.add(t);
-        }
+        values.forEach(historyManager::add);
+
         return new ArrayList<>(values);
     }
 
     @Override
     public ArrayList<Subtask> getAllSubtasks() {
         Collection<Subtask> values = subtaskHashMap.values();
-        for (Subtask t : values) {
-            historyManager.add(t);
-        }
+        values.forEach(historyManager::add);
+
         return new ArrayList<>(values);
     }
 
     @Override
     public ArrayList<Epic> getAllEpics() {
         Collection<Epic> values = epicHashMap.values();
-        for (Epic t : values) {
-            historyManager.add(t);
-        }
+        values.forEach(historyManager::add);
+
         return new ArrayList<>(values);
     }
 
@@ -98,6 +95,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewTask(Task newTask) {
+        taskValidation(newTask);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!taskHashMap.containsKey(NEW_ID)) {
@@ -111,6 +109,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewSubtask(Subtask subtask, Integer idEpic) {
+        taskValidation(subtask);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!subtaskHashMap.containsKey(NEW_ID)) {
@@ -119,6 +118,7 @@ public class InMemoryTaskManager implements TaskManager {
             subtask.setId(NEW_ID);
             subtaskHashMap.put(NEW_ID, subtask);
             historyManager.add(subtask);
+            recalculateDuration(subtask, idEpic);
         } else {
             updateSubtask(subtask);
         }
@@ -126,6 +126,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void addNewEpic(Epic epic) {
+        taskValidation(epic);
         final int NEW_ID = InMemoryTaskManager.getNewId();
 
         if (!epicHashMap.containsKey(NEW_ID)) {
@@ -139,6 +140,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task task) {
+        taskValidation(task);
         final int NEW_ID = task.getId();
         taskHashMap.put(NEW_ID, task);
     }
@@ -148,16 +150,18 @@ public class InMemoryTaskManager implements TaskManager {
         final int NEW_ID = subtask.getId();
         ArrayList<Integer> idEpics = subtask.getIdEpics();
 
-        for (int idEpic : idEpics) {
+        idEpics.forEach(idEpic -> {
+            taskValidation(subtask);
             Epic epic = epicHashMap.get(idEpic);
             updateEpic(epic);
-        }
+        });
 
         subtaskHashMap.put(NEW_ID, subtask);
     }
 
     @Override
     public void updateEpic(Epic epic) {
+        taskValidation(epic);
         final int NEW_ID = epic.getId();
         ArrayList<Integer> listIdSubtasks = epic.getListIdSubtasks();
         boolean allSubtasksNew = true;
@@ -230,6 +234,60 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public HashMap<Integer, Epic> getEpicHashMap() {
         return epicHashMap;
+    }
+
+    @Override
+    public void recalculateDuration(Subtask subtask, int id) {
+        Epic epic = epicHashMap.get(id);
+        ArrayList<Subtask> listSubtaskByEpic = getListSubtaskByEpic(epic);
+
+        LocalDateTime localDateTime = listSubtaskByEpic.stream()
+                .map(Subtask::getStartTime)
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
+
+        //При установке эпику даты начала, я обрезаю наносекунды, что того что бы
+        //в таблице с упорядоченными тасками не было сравнения одинаковых дат)
+        if (localDateTime != null) {
+            localDateTime = localDateTime.withNano(0);
+        }
+        epic.setStartTime(localDateTime);
+
+        epic.setEndTime(listSubtaskByEpic.stream()
+                .map(Subtask::getEndTime)
+                .max(LocalDateTime::compareTo)
+                .orElse(null)
+        );
+
+        epic.setDuration(listSubtaskByEpic.stream()
+                .map(Subtask::getDuration)
+                .reduce(Duration.ZERO, Duration::plus)
+        );
+    }
+
+    public void addTaskInToPrioritizedTasks(Task t) {
+        prioritizedTasks.add(t);
+    }
+
+    @Override
+    public TreeSet<Task> getPrioritizedTasks() {
+        return new TreeSet<>(prioritizedTasks);
+    }
+
+    @Override
+    public void taskValidation(Task task) {
+        Stream.of(getAllTasks(), getAllEpics(), getAllSubtasks())
+                .flatMap(List::stream)
+                .forEach(t -> {
+                    if (t.isIntersecting(task)) {
+                        throw new RuntimeException("Не удалось создать задачу (Пересакается период).");
+                    }
+                });
+    }
+
+    @Override
+    public HistoryManager getHistoryManager() {
+        return historyManager;
     }
 
 }
