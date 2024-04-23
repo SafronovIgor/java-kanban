@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public interface TaskManager {
+public interface TaskManager extends Manager{
 
     List<Task> getHistory();
 
