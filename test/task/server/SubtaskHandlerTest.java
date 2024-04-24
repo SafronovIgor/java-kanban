@@ -1,5 +1,7 @@
 package task.server;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,6 +21,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -127,6 +131,77 @@ class SubtaskHandlerTest {
 
         } catch (IOException | InterruptedException e) {
             System.out.println("An error occurred while sending the request to the server.");
+        }
+    }
+
+    @Test
+    void createSubtask() {
+        Optional<Integer> epicID = manager.getAllEpics().stream()
+                .max(Comparator.comparingInt(Task::getId))
+                .map(Task::getId);
+        Optional<Integer> subtaskID = manager.getAllSubtasks().stream()
+                .max(Comparator.comparingInt(Task::getId))
+                .map(Task::getId);
+
+        Subtask subtask = new Subtask();
+        subtask.setId(subtaskID.get() + 1);
+        subtask.setStatus(Status.NEW);
+        subtask.setTaskType(TaskType.SUBTASK);
+        subtask.setName("Subtask for test");
+        subtask.setDescription("Subtask for test");
+        subtask.setStartTime(LocalDateTime.now());
+        subtask.addIdEpicToList(epicID.get());
+
+        HttpResponse<String> response = sendTaskByPost(subtask, null);
+
+        assertNotNull(response);
+        assertNotNull(manager.getSubtaskById(subtaskID.get() + 1));
+    }
+
+    @Test
+    void updateSubtask() {
+        Optional<Subtask> any = manager.getAllSubtasks().stream().findAny();
+        if (any.isPresent()) {
+            String oldNameSubtask = any.get().getName();
+
+            Subtask subtask = new Subtask();
+            subtask.setId(any.get().getId());
+            subtask.setStatus(Status.NEW);
+            subtask.setTaskType(TaskType.SUBTASK);
+            subtask.setName("TTTTTTTTTTTTTTTTT");
+            subtask.setDescription("Subtask for test");
+            subtask.setStartTime(LocalDateTime.now());
+
+            HttpResponse<String> response = sendTaskByPost(subtask, subtask.getId());
+            int status = response.statusCode();
+
+            System.out.println("Server responded with status code: " + status + ", body: " + response.body());
+
+            assertNotEquals(oldNameSubtask, manager.getSubtaskById(subtask.getId()).getName());
+        } else {
+            fail("=(");
+        }
+    }
+
+    private HttpResponse<String> sendTaskByPost(Subtask task, Integer id) {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+                .create();
+        String json = gson.toJson(task);
+
+        URI uri = URI.create("http://localhost:8080/subtask" + (id == null ? "" : ("/" + task.getId())));
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .uri(uri)
+                .header("Content-Type", "application/json")
+                .build();
+        HttpClient httpClient = HttpClient.newBuilder().build();
+
+        try {
+            return httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            System.out.println(e.getMessage());
+            return null;
         }
     }
 

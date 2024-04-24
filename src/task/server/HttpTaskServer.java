@@ -7,7 +7,6 @@ import task.service.Managers;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public final class HttpTaskServer {
     private final HttpServer httpServer;
@@ -21,6 +20,9 @@ public final class HttpTaskServer {
             this.httpServer = HttpServer.create(new InetSocketAddress(socket), 0);
             this.httpServer.createContext("/tasks", new TasksHandler<>(managers));
             this.httpServer.createContext("/subtask", new SubtaskHandler<>(managers));
+            this.httpServer.createContext("/epics", new EpicHandler<>(managers));
+            this.httpServer.createContext("/history", new HistoryHandler<>(managers));
+            this.httpServer.createContext("/prioritized", new PrioritizedHandler<>(managers));
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage());
         }

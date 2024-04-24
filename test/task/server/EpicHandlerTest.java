@@ -3,7 +3,6 @@ package task.server;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpServer;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,14 +18,14 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class HttpTaskServerTest {
+class EpicHandlerTest {
     private static final InMemoryHistoryManager historyManager = Managers.getDefaultHistoryManager();
     private static final FileBackedTaskManager manager = Managers.getFileBackedTaskManager();
     private static final HttpServer httpServer;
@@ -45,7 +44,7 @@ class HttpTaskServerTest {
         managers.add(manager);
         managers.add(historyManager);
 
-        httpServer.createContext("/tasks", new TasksHandler<>(managers));
+        httpServer.createContext("/epics", new EpicHandler<>(managers));
         httpServer.start();
     }
 
@@ -83,8 +82,8 @@ class HttpTaskServerTest {
     }
 
     @Test
-    void GETTasks() {
-        URI uri = URI.create("http://localhost:8080/tasks");
+    void getEpics() {
+        URI uri = URI.create("http://localhost:8080/epics");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(uri)
@@ -105,8 +104,10 @@ class HttpTaskServerTest {
     }
 
     @Test
-    void GETTaskById() {
-        URI uri = URI.create("http://localhost:8080/tasks/50");
+    void getEpicById() {
+        int id = manager.getAllEpics().stream().findAny().get().getId();
+
+        URI uri = URI.create("http://localhost:8080/epics/" + id);
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(uri)
@@ -127,74 +128,83 @@ class HttpTaskServerTest {
     }
 
     @Test
-    void POSTTask() {
-        Task task = new Task();
-        task.setStatus(Status.NEW);
-        task.setTaskType(TaskType.TASK);
-        task.setName("POST_Task");
-        task.setDescription("Task for POST test");
-        task.setStartTime(LocalDateTime.now());
+    void getEpicSubtask() {
+        int id = manager.getAllEpics().stream().findAny().get().getId();
 
-        HttpResponse<String> response = sendTaskByPost(task);
+        URI uri = URI.create("http://localhost:8080/epics/" + id + "/subtasks");
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .GET()
+                .uri(uri)
+                .build();
+        HttpClient httpClient = HttpClient.newBuilder().build();
 
-        if (response != null) {
+        try {
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
             int status = response.statusCode();
-            System.out.println("Server responded with status code: " + status);
-            assertEquals(201, status);
-        } else {
-            fail("Failed to send request to server.");
+
+            System.out.println("Server responded with status code: " + status + ", body: " + response.body());
+            assertFalse(response.body().isEmpty());
+
+        } catch (IOException | InterruptedException e) {
+            System.out.println("An error occurred while sending the request to the server.");
         }
     }
 
     @Test
-    void POSTTask_ValidationFailure() {
-        Task firstTask = new Task();
-        firstTask.setStatus(Status.NEW);
-        firstTask.setTaskType(TaskType.TASK);
-        firstTask.setName("First_Task");
-        firstTask.setDescription("First Task for POST test");
-        firstTask.setStartTime(LocalDateTime.now());
-        firstTask.setDuration(Duration.ofDays(2));
+    void createEpic() {
+        Epic task = new Epic();
+        task.setStatus(Status.NEW);
+        task.setTaskType(TaskType.EPIC);
+        task.setName("xxxxxxxxxxx");
+        task.setDescription("Epic for test");
+        task.setStartTime(LocalDateTime.now());
+        task.setEndTime(LocalDateTime.now());
 
-        HttpResponse<String> firstResponse = sendTaskByPost(firstTask);
+        HttpResponse<String> response = sendTaskByPost(task);
 
-        if (firstResponse == null || firstResponse.statusCode() != 201) {
-            fail("Failed to create first task.");
-        }
+        assertNotNull(response);
+        Epic epicsById = manager.getEpicsById(manager.getAllEpics().stream()
+                .max(Comparator.comparingInt(Task::getId))
+                .orElseGet(() -> fail("=("))
+                .getId()
+        );
+        assertEquals(task.getName(), epicsById.getName());
+    }
 
-        Task secondTask = new Task();
-        secondTask.setStatus(Status.NEW);
-        secondTask.setTaskType(TaskType.TASK);
-        secondTask.setName("Second_Task");
-        secondTask.setDescription("Second Task for POST test");
-        secondTask.setStartTime(firstTask.getStartTime());
-        secondTask.setDuration(Duration.ofDays(2));
+    @Test
+    void deleteEpic() {
+        ArrayList<Epic> tasks = manager.getAllEpics();
+        int countBefore = tasks.size();
+        int id = tasks.stream().findAny().get().getId();
+
+        URI uri = URI.create("http://localhost:8080/epics");
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .DELETE()
+                .uri(uri)
+                .build();
+        HttpClient httpClient = HttpClient.newBuilder().build();
 
         try {
-            HttpResponse<String> secondResponse = sendTaskByPost(secondTask);
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-            if (secondResponse != null) {
-                int status = secondResponse.statusCode();
-                System.out.println("Server responded with status code: " + status);
-                assertEquals(406, status);
-            } else {
-                fail("Failed to send request to server for second task.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception occurred: " + e.getMessage());
-        } finally {
-            manager.deleteAllTask();
+            int countAfter = manager.getAllEpics().size();
+            int status = response.statusCode();
+
+            System.out.println("Server responded with status code: " + status);
+            assertNotEquals(countBefore, countAfter);
+        } catch (IOException | InterruptedException e) {
+            e.getMessage();
         }
     }
 
-    private HttpResponse<String> sendTaskByPost(Task task) {
+    private HttpResponse<String> sendTaskByPost(Epic task) {
         Gson gson = new GsonBuilder()
                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                 .create();
         String json = gson.toJson(task);
 
-        URI uri = URI.create("http://localhost:8080/tasks");
+        URI uri = URI.create("http://localhost:8080/epics");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .uri(uri)
@@ -205,40 +215,8 @@ class HttpTaskServerTest {
         try {
             return httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            e.getMessage();
+            System.out.println(e.getMessage());
             return null;
         }
     }
-
-    @Test
-    void deleteTask() {
-        ArrayList<Task> tasks = manager.getAllTasks();
-        int countBefore = tasks.size();
-        int id = tasks.stream().findAny().get().getId();
-
-        URI uri = URI.create("http://localhost:8080/tasks/" + id);
-        HttpRequest httpRequest = HttpRequest.newBuilder()
-                .DELETE()
-                .uri(uri)
-                .build();
-        HttpClient httpClient = HttpClient.newBuilder().build();
-
-        try {
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-            int countAfter = manager.getAllTasks().size();
-            int status = response.statusCode();
-
-            System.out.println("Server responded with status code: " + status);
-            assertNotEquals(countBefore, countAfter);
-        } catch (IOException | InterruptedException e) {
-            e.getMessage();
-        }
-    }
-
-    @AfterAll
-    public static void AfterAll() {
-        httpServer.stop(1);
-    }
-
 }

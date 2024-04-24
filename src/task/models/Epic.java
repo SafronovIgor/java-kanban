@@ -5,8 +5,12 @@ import java.util.ArrayList;
 
 public class Epic extends Task {
     private final ArrayList<Integer> idSubtask = new ArrayList<>();
-    private final TaskType taskType = TaskType.EPIC;
+
     private LocalDateTime endTime;
+
+    public Epic() {
+        super.setTaskType(TaskType.EPIC);
+    }
 
     public void addIdSubtaskToList(Integer id) {
         this.idSubtask.add(id);
@@ -22,7 +26,7 @@ public class Epic extends Task {
 
     @Override
     public TaskType getTaskType() {
-        return taskType;
+        return super.getTaskType();
     }
 
     @Override
