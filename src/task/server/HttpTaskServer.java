@@ -9,15 +9,16 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
 public final class HttpTaskServer {
+    private static final int PORT = 8080;
     private final HttpServer httpServer;
 
-    public HttpTaskServer(final int socket) {
+    public HttpTaskServer() {
         ArrayList<Manager> managers = new ArrayList<>();
         managers.add(Managers.getDefaultHistoryManager());
         managers.add(Managers.getFileBackedTaskManager());
 
         try {
-            this.httpServer = HttpServer.create(new InetSocketAddress(socket), 0);
+            this.httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
             this.httpServer.createContext("/tasks", new TasksHandler<>(managers));
             this.httpServer.createContext("/subtask", new SubtaskHandler<>(managers));
             this.httpServer.createContext("/epics", new EpicHandler<>(managers));
@@ -29,8 +30,7 @@ public final class HttpTaskServer {
     }
 
     public static void main(String[] args) {
-        HttpTaskServer httpTaskServer = new HttpTaskServer(8080);
-        httpTaskServer.start();
+        new HttpTaskServer().start();
     }
 
     public void start() {
