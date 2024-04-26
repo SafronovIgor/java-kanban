@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-public class PrioritizedHandler <T extends Manager> implements HttpHandler {
+public class PrioritizedHandler<T extends Manager> implements HttpHandler {
     private final List<T> managers;
 
     public PrioritizedHandler(List<T> managers) {
@@ -23,43 +23,21 @@ public class PrioritizedHandler <T extends Manager> implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String response = "";
-        String method = exchange.getRequestMethod();
-        switch (method) {
+        BaseHttpHandler httpHandler = new BaseHttpHandler(exchange);
+
+        switch (exchange.getRequestMethod()) {
             case "GET":
                 for (T manager : managers) {
                     if (manager instanceof TaskManager) {
                         Set<Task> prioritizedTasks = ((TaskManager) manager).getPrioritizedTasks();
-                        response = toJson(exchange, prioritizedTasks);
+                        httpHandler.setResponseHeaders(
+                                httpHandler.toJson(prioritizedTasks)
+                        );
                     }
                 }
                 break;
             default:
-                response = "Method not found.";
+                httpHandler.setResponseHeaders("Method not found.");
         }
-
-        try (OutputStream os = exchange.getResponseBody()) {
-            exchange.sendResponseHeaders(200, response.getBytes().length);
-            os.write(response.getBytes());
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private String toJson(HttpExchange exchange, Object obj) throws IOException {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-        gsonBuilder.setPrettyPrinting();
-        Gson gson = gsonBuilder.create();
-
-        String json = gson.toJson(obj);
-
-        if (obj != null) {
-            exchange.sendResponseHeaders(200, json.getBytes().length);
-        } else {
-            exchange.sendResponseHeaders(404, 0);
-        }
-
-        return json;
     }
 }

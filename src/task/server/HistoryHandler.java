@@ -1,20 +1,15 @@
 package task.server;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import task.models.Epic;
 import task.models.Task;
 import task.service.Manager;
 import task.service.TaskManager;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
 import java.util.List;
 
-public class HistoryHandler <T extends Manager> implements HttpHandler {
+public class HistoryHandler<T extends Manager> implements HttpHandler {
     private final List<T> managers;
 
     public HistoryHandler(List<T> managers) {
@@ -23,43 +18,21 @@ public class HistoryHandler <T extends Manager> implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        String response = "";
-        String method = exchange.getRequestMethod();
-        switch (method) {
+        BaseHttpHandler httpHandler = new BaseHttpHandler(exchange);
+
+        switch (exchange.getRequestMethod()) {
             case "GET":
                 for (T manager : managers) {
                     if (manager instanceof TaskManager) {
                         List<Task> history = ((TaskManager) manager).getHistory();
-                        response = toJson(exchange, history);
+                        httpHandler.setResponseHeaders(
+                                httpHandler.toJson(history)
+                        );
                     }
                 }
                 break;
             default:
-                response = "Method not found.";
+                httpHandler.setResponseHeaders("Method not found.");
         }
-
-        try (OutputStream os = exchange.getResponseBody()) {
-            exchange.sendResponseHeaders(200, response.getBytes().length);
-            os.write(response.getBytes());
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    private String toJson(HttpExchange exchange, Object obj) throws IOException {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-        gsonBuilder.setPrettyPrinting();
-        Gson gson = gsonBuilder.create();
-
-        String json = gson.toJson(obj);
-
-        if (obj != null) {
-            exchange.sendResponseHeaders(200, json.getBytes().length);
-        } else {
-            exchange.sendResponseHeaders(404, 0);
-        }
-
-        return json;
     }
 }

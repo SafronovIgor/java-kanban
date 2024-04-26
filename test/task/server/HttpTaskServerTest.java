@@ -106,7 +106,7 @@ class HttpTaskServerTest {
 
     @Test
     void GETTaskById() {
-        URI uri = URI.create("http://localhost:8080/tasks/50");
+        URI uri = URI.create("http://localhost:8080/tasks/45");
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .GET()
                 .uri(uri)

@@ -178,7 +178,7 @@ class EpicHandlerTest {
         int countBefore = tasks.size();
         int id = tasks.stream().findAny().get().getId();
 
-        URI uri = URI.create("http://localhost:8080/epics");
+        URI uri = URI.create("http://localhost:8080/epics/" + id);
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .DELETE()
                 .uri(uri)
