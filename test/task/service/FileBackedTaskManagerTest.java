@@ -51,27 +51,27 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
         Task task1 = new Task();
         task1.setName("Согласовать время по ТЗ");
         task1.setDescription("ТЗ №7585 - доработка ws.");
-        task1.setStartTime(LocalDateTime.now().minusDays(30));
-        task1.setDuration(Duration.ofDays(5));
+        task1.setStartTime(LocalDateTime.now().minusDays(1));
+        task1.setDuration(Duration.ofDays(1));
         MANAGER.addNewTask(task1);
 
         Epic epic1 = new Epic();
         epic1.setName("Купить дом.");
         epic1.setDescription("Начать выбирать новое жильё.");
-        epic1.setStartTime(LocalDateTime.now().minusDays(9));
+        epic1.setStartTime(LocalDateTime.now());
         MANAGER.addNewEpic(epic1);
 
         Subtask subtask1 = new Subtask();
         subtask1.setName("subtask1");
         subtask1.setDescription("Найти сайты по продажам домой.");
-        subtask1.setStartTime(LocalDateTime.now().minusDays(8));
+        subtask1.setStartTime(LocalDateTime.now());
         subtask1.setDuration(Duration.ofDays(durationDaysSubtask1));
         MANAGER.addNewSubtask(subtask1, epic1.getId());
 
         Subtask subtask2 = new Subtask();
         subtask2.setName("subtask2");
         subtask2.setDescription("subtask2");
-        subtask2.setStartTime(LocalDateTime.now().minusDays(5));
+        subtask2.setStartTime(LocalDateTime.now().plusDays(501));
         subtask2.setDuration(Duration.ofDays(durationDaysSubtask2));
         MANAGER.addNewSubtask(subtask2, epic1.getId());
 
@@ -86,7 +86,7 @@ class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
     @Test
     @Order(3)
-    public void loadingTasks() throws IOException {
+    public void loadingTasks() {
         TaskManager defaultTaskManager = Managers.getDefaultTaskManager();
         defaultTaskManager.deleteAllTask();
         defaultTaskManager.deleteAllEpics();

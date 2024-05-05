@@ -4,7 +4,7 @@ import task.models.Task;
 
 import java.util.List;
 
-public interface HistoryManager {
+public interface HistoryManager extends Manager {
 
     void add(Task task);
 

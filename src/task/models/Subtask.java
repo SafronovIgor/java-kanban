@@ -4,7 +4,10 @@ import java.util.ArrayList;
 
 public class Subtask extends Task {
     private final ArrayList<Integer> idEpics = new ArrayList<>();
-    private final TaskType taskType = TaskType.SUBTASK;
+
+    public Subtask() {
+        super.setTaskType(TaskType.SUBTASK);
+    }
 
     public void addIdEpicToList(Integer id) {
         this.idEpics.add(id);
@@ -30,7 +33,7 @@ public class Subtask extends Task {
 
     @Override
     public TaskType getTaskType() {
-        return taskType;
+        return super.getTaskType();
     }
 
     @Override
